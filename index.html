@@ -72,6 +72,21 @@
     put('k', d.k); put('me', d.me);
   });
 
+  // Invite links look like ?join=K7PQ4QX9&me=Sam&from=Evan. A home screen app does not share storage
+  // with Safari, so the code and name also ride along in the address the home screen saves.
+  var P = new URLSearchParams(location.search.slice(1) + '&' + location.hash.slice(1));
+  var joinCode = P.get('join') || P.get('k'), joinMe = P.get('me'), joinFrom = P.get('from');
+  if (joinCode) put('k', joinCode);
+  if (joinMe) put('me', joinMe);
+  if (P.get('join')) {
+    var h = document.querySelector('#intro h1'), p = document.querySelector('#intro main p');
+    h.textContent = joinMe ? 'Welcome, ' + joinMe : 'You are invited';
+    p.textContent = (joinFrom ? joinFrom + ' invited you to the Danksgiving crew.' : 'You are invited to the Danksgiving crew.') +
+      ' Add it to your home screen so it is one tap away.';
+    var lastStep = document.querySelector('#intro ol li:last-child');
+    if (lastStep) lastStep.innerHTML = 'Open Danksgiving from the turkey icon. Your invite is built in.';
+  }
+
   if (/[?&]go=1\b/.test(location.search)) {
     document.body.classList.add('app');
     var q = [], k = get('k'), me = get('me');
@@ -84,7 +99,12 @@
     f.onload = function () { var l = document.getElementById('loading'); if (l) l.remove(); };
     document.getElementById('frameWrap').appendChild(f);
   } else {
-    try { history.replaceState(null, '', location.pathname + '?go=1'); } catch (e) {}
+    var keep = ['go=1'];
+    if (joinCode) keep.push('k=' + encodeURIComponent(joinCode));
+    if (joinMe) keep.push('me=' + encodeURIComponent(joinMe));
+    try { history.replaceState(null, '', location.pathname + '?' + keep.join('&')); } catch (e) {}
+    var openBtn = document.querySelector('#intro a.btn');
+    if (openBtn) openBtn.setAttribute('href', '?' + keep.join('&'));
   }
 </script>
 </body>

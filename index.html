@@ -19,8 +19,10 @@
   @media (prefers-color-scheme: dark) { :root { --bg: #14100c; --card: #201913; --ink: #f6eee3; --muted: #b8a996; --accent: #f08a4b; --line: #3a3027; } }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 17px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
-  /* App mode: the app fills the screen between the status bar and the home indicator. */
-  #frameWrap { position: fixed; inset: 0; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); background: var(--bg); display: none; }
+  /* App mode: the app fills the screen below the status bar, right to the bottom edge. The app's own
+     tab bar already pads for the home indicator, so no bottom padding here (that doubled the gap).
+     Any sliver left at the bottom takes the tab bar's color so it reads as part of it. */
+  #frameWrap { position: fixed; inset: 0; padding: env(safe-area-inset-top) 0 0; background: linear-gradient(to bottom, var(--bg) 50%, var(--card) 50%); display: none; }
   #frameWrap iframe { width: 100%; height: 100%; border: 0; display: block; background: var(--bg); }
   #loading { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
   #loading img { width: 88px; height: 88px; border-radius: 20px; opacity: .9; animation: pulse 1.4s ease-in-out infinite; }

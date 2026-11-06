@@ -28,6 +28,7 @@
   #loading img { width: 88px; height: 88px; border-radius: 20px; opacity: .9; animation: pulse 1.4s ease-in-out infinite; }
   @keyframes pulse { 50% { transform: scale(.94); opacity: .6; } }
   body.app #frameWrap { display: block; }
+  body.app { overflow: hidden; background: linear-gradient(to bottom, var(--bg) 50%, var(--card) 50%); }
   body.app #intro { display: none; }
   /* Intro mode: how to add it to the home screen. */
   #intro { min-height: 100%; display: grid; place-items: center; padding: calc(24px + env(safe-area-inset-top)) 16px 24px; }
@@ -99,7 +100,24 @@
     f.title = 'Danksgiving';
     f.allow = 'clipboard-write';
     f.onload = function () { var l = document.getElementById('loading'); if (l) l.remove(); };
-    document.getElementById('frameWrap').appendChild(f);
+    var wrap = document.getElementById('frameWrap');
+    wrap.appendChild(f);
+
+    // iOS home screen apps with a translucent status bar report a viewport one status bar shorter
+    // than the screen, which left a band under the tab bar. Size the frame to the real screen there.
+    var fit = function () {
+      var h = window.innerHeight;
+      if (navigator.standalone) {
+        var portrait = window.matchMedia('(orientation: portrait)').matches;
+        var screenH = portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
+        if (screenH > h) h = screenH;
+      }
+      wrap.style.bottom = 'auto';
+      wrap.style.height = h + 'px';
+    };
+    fit();
+    window.addEventListener('resize', fit);
+    window.addEventListener('orientationchange', function () { setTimeout(fit, 300); });
   } else {
     var keep = ['go=1'];
     if (joinCode) keep.push('k=' + encodeURIComponent(joinCode));

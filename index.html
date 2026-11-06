@@ -100,8 +100,20 @@
 
   if (/[?&]go=1\b/.test(location.search)) {
     document.body.classList.add('app');
+    // Home screen apps on recent iOS draw nothing in a status-bar-tall strip at the bottom of the screen,
+    // and the page cannot reach it. Keep the app in the visible area; the strip already clears the home
+    // indicator, so clip=1 drops the app's own bottom padding, and the strip takes the tab bar's color.
+    var portrait = window.matchMedia('(orientation: portrait)').matches;
+    var screenH = portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
+    var clipped = standalone && screenH - window.innerHeight > 20;
+    if (clipped) {
+      var card = window.matchMedia('(prefers-color-scheme: dark)').matches ? '#201913' : '#fffcf7';
+      document.documentElement.style.background = card;
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute('content', card); });
+    }
     // home=1 hides the add-to-home steps on the app's passcode screen.
     var q = ['home=' + (standalone ? 1 : 0)], k = get('k'), me = get('me');
+    if (clipped) q.push('clip=1');
     if (k) q.push('k=' + encodeURIComponent(k));
     if (me) q.push('me=' + encodeURIComponent(me));
     var f = document.createElement('iframe');
@@ -109,24 +121,7 @@
     f.title = 'Danksgiving';
     f.allow = 'clipboard-write';
     f.onload = function () { var l = document.getElementById('loading'); if (l) l.remove(); };
-    var wrap = document.getElementById('frameWrap');
-    wrap.appendChild(f);
-
-    // iOS home screen apps with a translucent status bar report a viewport one status bar shorter
-    // than the screen, which left a band under the tab bar. Size the frame to the real screen there.
-    var fit = function () {
-      var h = window.innerHeight;
-      if (navigator.standalone) {
-        var portrait = window.matchMedia('(orientation: portrait)').matches;
-        var screenH = portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
-        if (screenH > h) h = screenH;
-      }
-      wrap.style.bottom = 'auto';
-      wrap.style.height = h + 'px';
-    };
-    fit();
-    window.addEventListener('resize', fit);
-    window.addEventListener('orientationchange', function () { setTimeout(fit, 300); });
+    document.getElementById('frameWrap').appendChild(f);
   } else {
     var keep = ['go=1'];
     if (joinCode) keep.push('k=' + encodeURIComponent(joinCode));

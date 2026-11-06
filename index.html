@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Danksgiving</title>
+<meta name="apple-mobile-web-app-title" content="Danksgiving">
+<meta name="theme-color" content="#3a2316">
+<link rel="apple-touch-icon" href="apple-touch-icon-180.png">
+<link rel="apple-touch-icon" sizes="512x512" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="apple-touch-icon-180.png">
+<script>
+  // The app lives on Google Apps Script, which cannot set an iPhone home screen icon.
+  // This page carries the icon. Saved to the home screen it forwards straight to the app;
+  // opened directly it explains how to add it.
+  var APP = 'https://script.google.com/macros/s/AKfycbzIlDS36afrwXaT4qxweWF0xH96h4f12xStK5H5QlQtTSGpnow78BAFqNpuzxX2jygW/exec';
+  if (/[?&]go=1\b/.test(location.search)) {
+    location.replace(APP);
+  } else {
+    // Whatever gets saved to the home screen from here will carry go=1 and forward.
+    try { history.replaceState(null, '', location.pathname + '?go=1'); } catch (e) {}
+  }
+</script>
+<style>
+  :root { --bg: #f6efe4; --card: #fffcf7; --ink: #2a1d14; --muted: #6d5c4c; --accent: #b9481a; --line: #e4d8c6; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #14100c; --card: #201913; --ink: #f6eee3; --muted: #b8a996; --accent: #f08a4b; --line: #3a3027; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); font: 17px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+    display: grid; place-items: center; padding: 24px 16px; }
+  main { max-width: 420px; width: 100%; text-align: center; }
+  img { width: 120px; height: 120px; border-radius: 27px; box-shadow: 0 10px 30px rgba(60, 30, 10, .25); }
+  h1 { font-family: Georgia, serif; font-size: 32px; margin: 18px 0 6px; }
+  p { color: var(--muted); margin: 0 0 18px; }
+  ol { text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px 14px 36px; margin: 0 0 18px; }
+  li { margin: 6px 0; }
+  a.btn { display: block; padding: 15px; border-radius: 14px; background: var(--accent); color: #fff; font-weight: 700; text-decoration: none; }
+  .small { font-size: 14px; margin-top: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <img src="apple-touch-icon-180.png" alt="">
+  <h1>Danksgiving</h1>
+  <p>The prep plan, day-of timeline, recipes, and shopping list.</p>
+  <ol>
+    <li>In Safari, tap <b>Share</b>.</li>
+    <li>Tap <b>Add to Home Screen</b>, then <b>Add</b>.</li>
+    <li>Open Danksgiving from the turkey icon. Sign in with the Google account the Sheet is shared with.</li>
+  </ol>
+  <a class="btn" href="https://script.google.com/macros/s/AKfycbzIlDS36afrwXaT4qxweWF0xH96h4f12xStK5H5QlQtTSGpnow78BAFqNpuzxX2jygW/exec">Open Danksgiving</a>
+  <p class="small">On a computer, just bookmark the app.</p>
+</main>
+</body>
+</html>

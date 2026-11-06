@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -49,12 +49,12 @@
     <h1>Danksgiving</h1>
     <p>The prep plan, day-of timeline, recipes, and shopping list.</p>
     <ol>
-      <li>In Safari, tap <b>Share</b>.</li>
+      <li>Tap <b>Share</b>, the square with the arrow. In Safari it may be under <b>&middot;&middot;&middot;</b>.</li>
       <li>Tap <b>Add to Home Screen</b>, then <b>Add</b>.</li>
       <li>Open Danksgiving from the turkey icon and enter the crew passcode.</li>
     </ol>
     <a class="btn" href="?go=1">Open Danksgiving</a>
-    <p class="small">On a computer, bookmark this page after opening it.</p>
+    <p class="small">Works in Safari, Chrome, and other iPhone browsers, but not in links opened inside Messages, Gmail, or Instagram. On a computer, bookmark this page after opening it.</p>
   </main>
 </div>
 <div id="frameWrap"><div id="loading"><img src="apple-touch-icon-180.png" alt=""></div></div>
@@ -73,7 +73,7 @@
     var d = e.data && e.data.dg;
     if (!d) return;
     put('k', d.k); put('me', d.me);
-    // In Safari, keep the address current so Add to Home Screen saves the passcode and name too.
+    // In the browser, keep the address current so Add to Home Screen saves the passcode and name too.
     if (!standalone && /[?&]go=1\b/.test(location.search)) {
       var keep = ['go=1'], k = get('k'), me = get('me');
       if (k) keep.push('k=' + encodeURIComponent(k));

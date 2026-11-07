@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Danksgiving</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -71,9 +71,12 @@
         <img src="apple-touch-icon-180.png" alt="" style="width:34px;height:34px;border-radius:8px;box-shadow:none"></li>
     </ol>
     <ol class="steps" id="androidSteps" hidden>
-      <li><span>Tap <b>&vellip;</b> at the top right of Chrome</span><span></span></li>
-      <li><span>Tap <b>Add to Home screen</b> or <b>Install app</b></span><span></span></li>
-      <li><span>Open Danksgiving from the turkey on your home screen.</span><span></span></li>
+      <li><span>Tap the menu: <b id="andMenu">&vellip; at the top right</b><span class="tip">See <b>Open in Chrome</b> there? Tap that first, then the menu again.</span></span>
+        <svg class="glyph" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></li>
+      <li><span>Tap <b id="andAdd">Add to Home screen</b> or <b>Install app</b></span>
+        <svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3.5"/><path d="M12 8.5v7M8.5 12h7"/></svg></li>
+      <li><span>Tap <b>Add</b> or <b>Install</b>, then open Danksgiving from the turkey on your home screen.</span>
+        <img src="apple-touch-icon-180.png" alt="" style="width:34px;height:34px;border-radius:8px;box-shadow:none"></li>
     </ol>
     <a class="btn" id="openBtn" href="?go=1" hidden>Open Danksgiving</a>
     <p class="small" id="fallback"><a class="quiet" href="?go=1&amp;web=1" id="webLink">Cannot add it? Use it in the browser instead</a></p>
@@ -124,6 +127,11 @@
   // web=1 (the small fallback link) or a computer opens it in the browser.
   var ua = navigator.userAgent;
   var android = /Android/.test(ua);
+  var ios = /iPhone|iPod|iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  // iOS zooms the page when a small text box is focused and does not zoom back; this stops that
+  // (pinch zoom still works on iOS). Android keeps its default so pinch zoom is untouched.
+  if (ios) document.querySelector('meta[name="viewport"]').setAttribute('content',
+    'width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover');
   var phone = /iPhone|iPod|iPad|Android/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
   var inApp = /FBAN|FBAV|Instagram|Snapchat|LinkedInApp|GSA\/|Line\//.test(ua);
   var useApp = /[?&]go=1\b/.test(location.search) && (standalone || !phone || /[?&]web=1\b/.test(location.search));
@@ -135,7 +143,8 @@
     // indicator, so clip=1 drops the app's own bottom padding, and the strip takes the tab bar's color.
     var portrait = window.matchMedia('(orientation: portrait)').matches;
     var screenH = portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
-    var clipped = standalone && screenH - window.innerHeight > 20;
+    // iOS only: Android's status and navigation bars also make innerHeight shorter than the screen.
+    var clipped = ios && standalone && screenH - window.innerHeight > 20;
     if (clipped) {
       var card = window.matchMedia('(prefers-color-scheme: dark)').matches ? '#201913' : '#fffcf7';
       document.documentElement.style.background = card;
@@ -149,7 +158,7 @@
     var f = document.createElement('iframe');
     f.src = APP + '?' + q.join('&');
     f.title = 'Danksgiving';
-    f.allow = 'clipboard-write';
+    f.allow = 'clipboard-write; web-share';
     f.onload = function () { var l = document.getElementById('loading'); if (l) l.remove(); };
     document.getElementById('frameWrap').appendChild(f);
   } else {
@@ -165,7 +174,13 @@
       document.getElementById('openBtn').hidden = false;
       document.getElementById('fallback').hidden = true;
     } else {
-      if (android) { document.getElementById('iosSteps').hidden = true; document.getElementById('androidSteps').hidden = false; }
+      if (android) {
+        document.getElementById('iosSteps').hidden = true; document.getElementById('androidSteps').hidden = false;
+        if (/SamsungBrowser/.test(ua)) {
+          document.getElementById('andMenu').innerHTML = '&equiv; at the bottom right';
+          document.getElementById('andAdd').textContent = 'Add page to, then Home screen';
+        } else if (/Firefox/.test(ua)) document.getElementById('andMenu').innerHTML = '&vellip; next to the address';
+      }
       if (inApp) {
         document.getElementById('howLead').hidden = true;
         document.getElementById('inApp').hidden = false;

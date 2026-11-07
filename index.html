@@ -36,10 +36,21 @@
   main img { width: 120px; height: 120px; border-radius: 27px; box-shadow: 0 10px 30px rgba(60, 30, 10, .25); }
   h1 { font-family: Georgia, serif; font-size: 32px; margin: 18px 0 6px; }
   p { color: var(--muted); margin: 0 0 18px; }
-  ol { text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px 14px 36px; margin: 0 0 18px; }
-  li { margin: 6px 0; }
+  ol.steps { list-style: none; text-align: left; padding: 0; margin: 0 0 18px; counter-reset: s; }
+  ol.steps li { counter-increment: s; display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center;
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px; margin: 0 0 10px; }
+  ol.steps li::before { content: counter(s); width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: #fff;
+    font-weight: 800; font-size: 20px; display: grid; place-items: center; }
+  ol.steps li > span { min-width: 0; }
+  ol.steps b { color: var(--ink); }
+  ol.steps .tip { display: block; color: var(--muted); font-size: 14px; margin-top: 2px; }
+  .glyph { width: 34px; height: 34px; color: var(--accent); }
+  .lead { color: var(--ink); font-weight: 600; }
   a.btn { display: block; padding: 15px; border-radius: 14px; background: var(--accent); color: #fff; font-weight: 700; text-decoration: none; }
+  a.quiet { color: var(--muted); font-size: 14px; }
   .small { font-size: 14px; margin-top: 14px; }
+  .warn { background: var(--card); border: 2px solid var(--accent); border-radius: 16px; padding: 14px; color: var(--ink); text-align: left; }
+  [hidden] { display: none !important; }
 </style>
 </head>
 <body>
@@ -47,14 +58,25 @@
   <main>
     <img src="apple-touch-icon-180.png" alt="">
     <h1>Danksgiving</h1>
-    <p>The prep plan, day-of timeline, recipes, and shopping list.</p>
-    <ol>
-      <li>Tap <b>Share</b>, the square with the arrow. In Safari it may be under <b>&middot;&middot;&middot;</b>.</li>
-      <li>Tap <b>Add to Home Screen</b>, then <b>Add</b>.</li>
-      <li>Open Danksgiving from the turkey icon and enter the crew passcode.</li>
+    <p id="tagline">The prep plan, day-of timeline, recipes, and shopping list.</p>
+    <p class="lead" id="howLead">It runs from your home screen. Three steps:</p>
+    <div class="warn" id="inApp" hidden>This link opened inside another app, which cannot add it to your home screen.
+      Tap <b>&middot;&middot;&middot;</b> or the compass and choose <b>Open in Safari</b> (or Open in browser), then follow the steps there.</div>
+    <ol class="steps" id="iosSteps">
+      <li><span>Tap <b>Share</b><span class="tip">In Safari, tap <b>&middot;&middot;&middot;</b> first, then Share. In Chrome it is at the top.</span></span>
+        <svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 9H6.5A1.5 1.5 0 0 0 5 10.5v9A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 17.5 9H16"/><path d="M12 14V3M8.5 6.5 12 3l3.5 3.5"/></svg></li>
+      <li><span>Tap <b>Add to Home Screen</b><span class="tip">Not there? Scroll down or tap <b>More</b>.</span></span>
+        <svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3.5"/><path d="M12 8.5v7M8.5 12h7"/></svg></li>
+      <li><span id="lastStep">Tap <b>Add</b>, then open Danksgiving from the turkey on your home screen.</span>
+        <img src="apple-touch-icon-180.png" alt="" style="width:34px;height:34px;border-radius:8px;box-shadow:none"></li>
     </ol>
-    <a class="btn" href="?go=1">Open Danksgiving</a>
-    <p class="small">Works in Safari, Chrome, and other iPhone browsers, but not in links opened inside Messages, Gmail, or Instagram. On a computer, bookmark this page after opening it.</p>
+    <ol class="steps" id="androidSteps" hidden>
+      <li><span>Tap <b>&vellip;</b> at the top right of Chrome</span><span></span></li>
+      <li><span>Tap <b>Add to Home screen</b> or <b>Install app</b></span><span></span></li>
+      <li><span>Open Danksgiving from the turkey on your home screen.</span><span></span></li>
+    </ol>
+    <a class="btn" id="openBtn" href="?go=1" hidden>Open Danksgiving</a>
+    <p class="small" id="fallback"><a class="quiet" href="?go=1&amp;web=1" id="webLink">Cannot add it? Use it in the browser instead</a></p>
   </main>
 </div>
 <div id="frameWrap"><div id="loading"><img src="apple-touch-icon-180.png" alt=""></div></div>
@@ -76,6 +98,7 @@
     // In the browser, keep the address current so Add to Home Screen saves the passcode and name too.
     if (!standalone && /[?&]go=1\b/.test(location.search)) {
       var keep = ['go=1'], k = get('k'), me = get('me');
+      if (/[?&]web=1\b/.test(location.search)) keep.push('web=1');
       if (k) keep.push('k=' + encodeURIComponent(k));
       if (me) keep.push('me=' + encodeURIComponent(me));
       try { history.replaceState(null, '', location.pathname + '?' + keep.join('&')); } catch (err) {}
@@ -94,11 +117,18 @@
     h.textContent = joinMe ? 'Welcome, ' + joinMe : 'You are invited';
     p.textContent = (joinFrom ? joinFrom + ' invited you to the Danksgiving crew.' : 'You are invited to the Danksgiving crew.') +
       ' Add it to your home screen so it is one tap away.';
-    var lastStep = document.querySelector('#intro ol li:last-child');
-    if (lastStep) lastStep.innerHTML = 'Open Danksgiving from the turkey icon. Your invite is built in.';
+    document.getElementById('lastStep').innerHTML = 'Tap <b>Add</b>, then open Danksgiving from the turkey. Your invite is built in.';
   }
 
-  if (/[?&]go=1\b/.test(location.search)) {
+  // Phones get the add-to-home steps even at ?go=1, so the app is only used from the home screen.
+  // web=1 (the small fallback link) or a computer opens it in the browser.
+  var ua = navigator.userAgent;
+  var android = /Android/.test(ua);
+  var phone = /iPhone|iPod|iPad|Android/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  var inApp = /FBAN|FBAV|Instagram|Snapchat|LinkedInApp|GSA\/|Line\//.test(ua);
+  var useApp = /[?&]go=1\b/.test(location.search) && (standalone || !phone || /[?&]web=1\b/.test(location.search));
+
+  if (useApp) {
     document.body.classList.add('app');
     // Home screen apps on recent iOS draw nothing in a status-bar-tall strip at the bottom of the screen,
     // and the page cannot reach it. Keep the app in the visible area; the strip already clears the home
@@ -127,8 +157,21 @@
     if (joinCode) keep.push('k=' + encodeURIComponent(joinCode));
     if (joinMe) keep.push('me=' + encodeURIComponent(joinMe));
     try { history.replaceState(null, '', location.pathname + '?' + keep.join('&')); } catch (e) {}
-    var openBtn = document.querySelector('#intro a.btn');
-    if (openBtn) openBtn.setAttribute('href', '?' + keep.join('&'));
+    document.getElementById('openBtn').setAttribute('href', '?' + keep.join('&'));
+    document.getElementById('webLink').setAttribute('href', '?' + keep.join('&') + '&web=1');
+    if (!phone) {
+      document.getElementById('howLead').textContent = 'On a computer, open it and bookmark it. On a phone, open this link there to add it to your home screen.';
+      document.getElementById('iosSteps').hidden = true;
+      document.getElementById('openBtn').hidden = false;
+      document.getElementById('fallback').hidden = true;
+    } else {
+      if (android) { document.getElementById('iosSteps').hidden = true; document.getElementById('androidSteps').hidden = false; }
+      if (inApp) {
+        document.getElementById('howLead').hidden = true;
+        document.getElementById('inApp').hidden = false;
+        document.getElementById('iosSteps').hidden = document.getElementById('androidSteps').hidden = true;
+      }
+    }
   }
 </script>
 </body>

@@ -97,7 +97,9 @@
     if (!/^https:\/\/[a-z0-9-]+\.googleusercontent\.com$/.test(e.origin) && e.origin !== 'https://script.google.com') return;
     var d = e.data && e.data.dg;
     if (!d) return;
-    put('k', d.k); put('me', d.me);
+    // out: the person signed this phone out, so forget the code too.
+    if (d.out) { try { localStorage.removeItem('dg_k'); } catch (err) {} } else put('k', d.k);
+    put('me', d.me);
     // Tell the app what was kept, so its diagnostics can show whether this handoff works.
     try { e.source.postMessage({ dgAck: { k: !!get('k'), me: get('me') } }, e.origin); } catch (err) {}
     // In the browser, keep the address current so Add to Home Screen saves the passcode and name too.

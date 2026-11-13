@@ -98,6 +98,8 @@
     var d = e.data && e.data.dg;
     if (!d) return;
     put('k', d.k); put('me', d.me);
+    // Tell the app what was kept, so its diagnostics can show whether this handoff works.
+    try { e.source.postMessage({ dgAck: { k: !!get('k'), me: get('me') } }, e.origin); } catch (err) {}
     // In the browser, keep the address current so Add to Home Screen saves the passcode and name too.
     if (!standalone && /[?&]go=1\b/.test(location.search)) {
       var keep = ['go=1'], k = get('k'), me = get('me');
@@ -113,8 +115,11 @@
   // with Safari, so the code and name also ride along in the address the home screen saves.
   var P = new URLSearchParams(location.search.slice(1) + '&' + location.hash.slice(1));
   var joinCode = P.get('join') || P.get('k'), joinMe = P.get('me'), joinFrom = P.get('from');
-  if (joinCode) put('k', joinCode);
-  if (joinMe) put('me', joinMe);
+  // A new invite link wins. Otherwise the code and name saved in the home screen address only fill in
+  // when nothing is stored: that address is frozen at install time, while the app keeps reporting the
+  // current code (a host passcode typed later must not be overwritten by the old one on every launch).
+  if (P.get('join')) { put('k', joinCode); put('me', joinMe); }
+  else { if (joinCode && !get('k')) put('k', joinCode); if (joinMe && !get('me')) put('me', joinMe); }
   if (P.get('join')) {
     var h = document.querySelector('#intro h1'), p = document.querySelector('#intro main p');
     h.textContent = joinMe ? 'Welcome, ' + joinMe : 'You are invited';
